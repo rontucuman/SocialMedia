@@ -8,4 +8,8 @@
     <ProjectReference Include="..\SocialMedia.Core\SocialMedia.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Repositories\" />
+  </ItemGroup>
+
 </Project>
