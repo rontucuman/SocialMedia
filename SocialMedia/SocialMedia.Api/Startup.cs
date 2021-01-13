@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SocialMedia.Core.Interfaces;
@@ -40,6 +41,10 @@ namespace SocialMedia.Api
         options.UseSqlServer(Configuration.GetConnectionString("SocialMedia")));
       services.AddTransient<IPostRepository, PostRepository>();
       services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+      services.AddMvc().AddFluentValidation(options =>
+      {
+        options.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+      });
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
