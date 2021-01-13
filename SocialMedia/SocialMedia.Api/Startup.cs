@@ -15,6 +15,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SocialMedia.Core.Interfaces;
+using SocialMedia.Core.Services;
 using SocialMedia.Infrastructure.Data;
 using SocialMedia.Infrastructure.Repositories;
 
@@ -40,6 +41,8 @@ namespace SocialMedia.Api
       services.AddDbContext<SocialMediaContext>(options =>
         options.UseSqlServer(Configuration.GetConnectionString("SocialMedia")));
       services.AddTransient<IPostRepository, PostRepository>();
+      services.AddTransient<IPostService, PostService>();
+      services.AddTransient<IUserRepository, UserRepository>();
       services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
       services.AddMvc().AddFluentValidation(options =>
       {

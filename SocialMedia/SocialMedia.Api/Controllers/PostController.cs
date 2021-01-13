@@ -17,19 +17,19 @@ namespace SocialMedia.Api.Controllers
   [ApiController]
   public class PostController : ControllerBase
   {
-    private readonly IPostRepository _postRepository;
+    private readonly IPostService _postService;
     private readonly IMapper _mapper;
 
-    public PostController(IPostRepository postRepository, IMapper mapper)
+    public PostController(IPostService postService, IMapper mapper)
     {
-      _postRepository = postRepository;
+      _postService = postService;
       _mapper = mapper;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetPostsAsync()
     {
-      IEnumerable<Post> posts = await _postRepository.GetPostsAsync();
+      IEnumerable<Post> posts = await _postService.GetPostsAsync();
       IEnumerable<PostDto> postDtos = _mapper.Map<IEnumerable<PostDto>>(posts);
       ApiResponse<IEnumerable<PostDto>> response = new ApiResponse<IEnumerable<PostDto>>(postDtos);
 
@@ -39,7 +39,7 @@ namespace SocialMedia.Api.Controllers
     [HttpGet("{postId}")]
     public async Task<IActionResult> GetPostAsync(int postId)
     {
-      Post post = await _postRepository.GetPostAsync(postId);
+      Post post = await _postService.GetPostAsync(postId);
       PostDto postDto = _mapper.Map<PostDto>(post);
       ApiResponse<PostDto> response = new ApiResponse<PostDto>(postDto);
       
@@ -50,7 +50,7 @@ namespace SocialMedia.Api.Controllers
     public async Task<IActionResult> InsertPostAsync(PostDto postDto)
     {
       Post post = _mapper.Map<Post>(postDto);
-      await _postRepository.InsertPostAsync(post);
+      await _postService.InsertPostAsync(post);
       PostDto postResultDto = _mapper.Map<PostDto>(post);
       ApiResponse<PostDto> response = new ApiResponse<PostDto>(postResultDto);
 
@@ -62,7 +62,7 @@ namespace SocialMedia.Api.Controllers
     {
       Post post = _mapper.Map<Post>(postDto);
       post.PostId = postId;
-      bool result = await _postRepository.UpdatePostAsync(post);
+      bool result = await _postService.UpdatePostAsync(post);
       ApiResponse<bool> response = new ApiResponse<bool>(result);
 
       return Ok(response);
@@ -71,7 +71,7 @@ namespace SocialMedia.Api.Controllers
     [HttpDelete("{postId}")]
     public async Task<IActionResult> DeletePostAsync(int postId)
     {
-      bool result = await _postRepository.DeletePostAsync(postId);
+      bool result = await _postService.DeletePostAsync(postId);
       ApiResponse<bool> response = new ApiResponse<bool>(result);
 
       return Ok(response);
