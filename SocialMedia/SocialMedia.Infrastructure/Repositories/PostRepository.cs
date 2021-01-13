@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SocialMedia.Core.Entities;
@@ -29,6 +27,12 @@ namespace SocialMedia.Infrastructure.Repositories
     {
       var post = await _context.Posts.FirstOrDefaultAsync(x => x.PostId == postId);
       return post;
+    }
+
+    public async Task InsertPostAsync(Post post)
+    {
+      _context.Posts.Add(post);
+      await _context.SaveChangesAsync();
     }
   }
 }
