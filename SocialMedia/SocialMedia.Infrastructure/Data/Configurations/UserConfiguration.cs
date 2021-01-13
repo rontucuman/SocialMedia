@@ -30,7 +30,7 @@ namespace SocialMedia.Infrastructure.Data.Configurations
         .HasColumnName("FechaNacimiento")
         .HasColumnType("date");
 
-      builder.Property(e => e.FirtsName)
+      builder.Property(e => e.FirstName)
         .HasColumnName("Nombres")
         .IsRequired()
         .HasMaxLength(50)
