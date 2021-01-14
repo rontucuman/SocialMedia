@@ -40,9 +40,11 @@ namespace SocialMedia.Api
         });
       services.AddDbContext<SocialMediaContext>(options =>
         options.UseSqlServer(Configuration.GetConnectionString("SocialMedia")));
-      services.AddTransient<IPostRepository, PostRepository>();
+      
       services.AddTransient<IPostService, PostService>();
-      services.AddTransient<IUserRepository, UserRepository>();
+      services.AddTransient<IUnitOfWork, UnitOfWork>();
+      services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
+      
       services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
       services.AddMvc().AddFluentValidation(options =>
       {
