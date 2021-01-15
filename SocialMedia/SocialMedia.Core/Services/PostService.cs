@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using SocialMedia.Core.Entities;
+using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
 
 namespace SocialMedia.Core.Services
@@ -15,9 +17,9 @@ namespace SocialMedia.Core.Services
       _unitOfWork = unitOfWork;
     }
 
-    public async Task<IEnumerable<Post>> GetPostsAsync()
+    public IEnumerable<Post> GetPosts()
     {
-      return await _unitOfWork.PostRepository.GetAllAsync();
+      return _unitOfWork.PostRepository.GetAll();
     }
 
     public async Task<Post> GetPostAsync(int postId)
@@ -31,26 +33,41 @@ namespace SocialMedia.Core.Services
 
       if (user == null)
       {
-        throw new Exception("User does not exist");
+        throw new BusinessException("User does not exist");
+      }
+
+      IEnumerable<Post> userPosts = await _unitOfWork.PostRepository.GetPostsByUserIdAsync(post.UserId);
+
+      if (userPosts.Count() < 10)
+      {
+
+        Post lastPost = userPosts.OrderByDescending(x => x.Date).FirstOrDefault();
+        if ((DateTime.Now - lastPost.Date).Days < 7)
+        {
+          throw new BusinessException("You cannot publish more Posts");
+        }
       }
 
       if (post.Description.Contains("sex", StringComparison.InvariantCultureIgnoreCase))
       {
-        throw new Exception("Content not allowed");
+        throw new BusinessException("Content not allowed");
       }
 
       await _unitOfWork.PostRepository.AddAsync(post);
+      await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<bool> UpdatePostAsync(Post post)
     {
-      await _unitOfWork.PostRepository.UpdateAsync(post);
+      _unitOfWork.PostRepository.Update(post);
+      await _unitOfWork.SaveChangesAsync(); 
       return true;
     }
 
     public async Task<bool> DeletePostAsync(int postId)
     {
       await _unitOfWork.PostRepository.DeleteAsync(postId);
+      await _unitOfWork.SaveChangesAsync();
       return true;
     }
   }

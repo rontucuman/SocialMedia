@@ -4,12 +4,8 @@ using SocialMedia.Core.Entities;
 
 namespace SocialMedia.Core.Interfaces
 {
-  public interface IPostRepository
+  public interface IPostRepository : IRepository<Post>
   {
-    Task<IEnumerable<Post>> GetPostsAsync();
-    Task<Post> GetPostAsync(int postId);
-    Task InsertPostAsync(Post post);
-    Task<bool> UpdatePostAsync(Post post);
-    Task<bool> DeletePostAsync(int postId);
+    Task<IEnumerable<Post>> GetPostsByUserIdAsync(int userId);
   }
 }
