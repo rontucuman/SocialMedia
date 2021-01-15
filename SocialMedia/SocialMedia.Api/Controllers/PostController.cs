@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using SocialMedia.Api.Responses;
 using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Entities;
 using SocialMedia.Core.Interfaces;
+using SocialMedia.Core.QueryFilters;
 using SocialMedia.Infrastructure.Repositories;
 
 namespace SocialMedia.Api.Controllers
@@ -27,9 +29,11 @@ namespace SocialMedia.Api.Controllers
     }
 
     [HttpGet]
-    public IActionResult GetPosts()
+    [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<PostDto>>))]
+    [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ApiResponse<IEnumerable<PostDto>>))]
+    public IActionResult GetPosts([FromQuery]PostQueryFilter filters)
     {
-      IEnumerable<Post> posts = _postService.GetPosts();
+      IEnumerable<Post> posts = _postService.GetPosts(filters);
       IEnumerable<PostDto> postDtos = _mapper.Map<IEnumerable<PostDto>>(posts);
       ApiResponse<IEnumerable<PostDto>> response = new ApiResponse<IEnumerable<PostDto>>(postDtos);
 
