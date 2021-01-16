@@ -12,13 +12,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SocialMedia.Core.Interfaces;
+using SocialMedia.Core.Options;
 using SocialMedia.Core.Services;
 using SocialMedia.Infrastructure.Data;
 using SocialMedia.Infrastructure.Filters;
+using SocialMedia.Infrastructure.Interfaces;
 using SocialMedia.Infrastructure.Repositories;
+using SocialMedia.Infrastructure.Services;
 
 namespace SocialMedia.Api
 {
@@ -41,13 +45,24 @@ namespace SocialMedia.Api
         .AddNewtonsoftJson(options =>
         {
           options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+          options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
         });
+
+      services.Configure<PaginationOptions>(Configuration.GetSection("Pagination"));
+
       services.AddDbContext<SocialMediaContext>(options =>
         options.UseSqlServer(Configuration.GetConnectionString("SocialMedia")));
       
       services.AddTransient<IPostService, PostService>();
       services.AddTransient<IUnitOfWork, UnitOfWork>();
       services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
+      services.AddSingleton<IUriService>(provider =>
+      { 
+        IHttpContextAccessor accessor = provider.GetRequiredService<IHttpContextAccessor>();
+        HttpRequest request = accessor.HttpContext.Request;
+        string absoluteUri = $"{request.Scheme}://{request.Host.ToUriComponent()}";
+        return new UriService(absoluteUri);
+      });
       
       services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
       services.AddMvc().AddFluentValidation(options =>
