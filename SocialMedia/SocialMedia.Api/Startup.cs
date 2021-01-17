@@ -11,11 +11,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using SocialMedia.Core.Interfaces;
@@ -52,6 +55,7 @@ namespace SocialMedia.Api
         });
 
       services.Configure<PaginationOptions>(Configuration.GetSection("Pagination"));
+      services.Configure<AuthenticationOptions>(Configuration.GetSection("Authentication"));
 
       services.AddDbContext<SocialMediaContext>(options =>
         options.UseSqlServer(Configuration.GetConnectionString("SocialMedia")));
@@ -80,6 +84,24 @@ namespace SocialMedia.Api
         }
       });
 
+      services.AddAuthentication(options =>
+      {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+      }).AddJwtBearer(options =>
+      {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+          ValidateIssuer = true,
+          ValidateAudience = true,
+          ValidateLifetime = true,
+          ValidateIssuerSigningKey = true,
+          ValidIssuer = Configuration["Authentication:Issuer"],
+          ValidAudience = Configuration.GetSection("Authentication").GetSection("Audience").Value,
+          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Authentication:SecretKey"]))
+        };
+      });
+
       services.AddMvc().AddFluentValidation(options =>
       {
         options.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
@@ -105,8 +127,9 @@ namespace SocialMedia.Api
 
       app.UseRouting();
 
+      app.UseAuthentication();
       app.UseAuthorization();
-
+      
       app.UseEndpoints( endpoints =>
        {
          endpoints.MapControllers();
