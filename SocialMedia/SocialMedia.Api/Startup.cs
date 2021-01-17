@@ -8,12 +8,15 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Core.Options;
@@ -65,6 +68,18 @@ namespace SocialMedia.Api
       });
       
       services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+      services.AddSwaggerGen(options =>
+      {
+        options.SwaggerDoc("v1", new OpenApiInfo {Title = "Social Media API", Version = "v1"});
+        
+        DirectoryInfo baseDirectory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        foreach (FileInfo fileInfo in baseDirectory.EnumerateFiles("*.xml"))
+        {
+          options.IncludeXmlComments(fileInfo.FullName);
+        }
+      });
+
       services.AddMvc().AddFluentValidation(options =>
       {
         options.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
@@ -80,6 +95,13 @@ namespace SocialMedia.Api
       }
 
       app.UseHttpsRedirection();
+
+      app.UseSwagger();
+      app.UseSwaggerUI(options =>
+      {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Social Media API v1");
+        options.RoutePrefix = string.Empty;
+      });
 
       app.UseRouting();
 

@@ -18,6 +18,7 @@ using SocialMedia.Infrastructure.Repositories;
 
 namespace SocialMedia.Api.Controllers
 {
+  [Produces("application/json")]
   [Route("api/[controller]")]
   [ApiController]
   public class PostController : ControllerBase
@@ -33,6 +34,11 @@ namespace SocialMedia.Api.Controllers
       _uriService = uriService;
     }
 
+    /// <summary>
+    /// Retrieve all posts from repository
+    /// </summary>
+    /// <param name="filters">filters to apply while recovering posts</param>
+    /// <returns></returns>
     [HttpGet(Name = nameof(GetPosts))]
     [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<PostDto>>))]
     [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ApiResponse<IEnumerable<PostDto>>))]
