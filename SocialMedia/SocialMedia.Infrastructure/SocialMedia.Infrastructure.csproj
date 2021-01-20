@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Folder Include="Data\Configurations\" />
+    <Folder Include="Options\" />
   </ItemGroup>
 
   <ItemGroup>

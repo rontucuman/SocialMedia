@@ -13,6 +13,7 @@ using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Entities;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Core.Options;
+using SocialMedia.Infrastructure.Interfaces;
 
 namespace SocialMedia.Api.Controllers
 {
@@ -22,11 +23,14 @@ namespace SocialMedia.Api.Controllers
   {
     private readonly AuthenticationOptions _authenticationOptions;
     private readonly ISecurityService _securityService;
+    private readonly IPasswordService _passwordService;
 
-    public TokenController(IOptions<AuthenticationOptions> authenticationOptions, ISecurityService securityService)
+    public TokenController(IOptions<AuthenticationOptions> authenticationOptions, ISecurityService securityService,
+      IPasswordService passwordService)
     {
       _authenticationOptions = authenticationOptions.Value;
       _securityService = securityService;
+      _passwordService = passwordService;
     }
 
     [HttpPost]
@@ -75,7 +79,8 @@ namespace SocialMedia.Api.Controllers
     private async Task<(bool, Security)> IsValidUser(UserLoginDto userLogin)
     {
       Security user = await _securityService.GetLoginByCredentials(userLogin);
-      return (user != null, user);
+      var isValid = _passwordService.Check(user.Password, userLogin.Password);
+      return (isValid, user);
     }
   }
 }
