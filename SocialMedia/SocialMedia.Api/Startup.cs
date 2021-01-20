@@ -61,6 +61,7 @@ namespace SocialMedia.Api
         options.UseSqlServer(Configuration.GetConnectionString("SocialMedia")));
       
       services.AddTransient<IPostService, PostService>();
+      services.AddTransient<ISecurityService, SecurityService>();
       services.AddTransient<IUnitOfWork, UnitOfWork>();
       services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
       services.AddSingleton<IUriService>(provider =>

@@ -10,35 +10,41 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SocialMedia.Core.DTOs;
+using SocialMedia.Core.Entities;
+using SocialMedia.Core.Interfaces;
 using SocialMedia.Core.Options;
 
 namespace SocialMedia.Api.Controllers
 {
-  [Route( "api/[controller]" )]
+  [Route("api/[controller]")]
   [ApiController]
   public class TokenController : ControllerBase
   {
     private readonly AuthenticationOptions _authenticationOptions;
+    private readonly ISecurityService _securityService;
 
-    public TokenController(IOptions<AuthenticationOptions> authenticationOptions)
+    public TokenController(IOptions<AuthenticationOptions> authenticationOptions, ISecurityService securityService)
     {
       _authenticationOptions = authenticationOptions.Value;
+      _securityService = securityService;
     }
 
     [HttpPost]
-    public IActionResult Authentication(UserLoginDto userLogin)
+    public async Task<IActionResult> Authentication(UserLoginDto userLogin)
     {
       // if it is a valid user
-      if (IsValidUser(userLogin))
+      (bool, Security) validation = await IsValidUser(userLogin);
+
+      if (validation.Item1)
       {
-        string token = GenerateToken();
+        string token = GenerateToken(validation.Item2);
         return Ok(new {token});
       }
 
       return NotFound();
     }
 
-    private string GenerateToken()
+    private string GenerateToken(Security security)
     {
       // Header
       SymmetricSecurityKey symmetricSecurityKey =
@@ -51,23 +57,25 @@ namespace SocialMedia.Api.Controllers
       // Claims
       Claim[] claims = new[]
       {
-        new Claim(ClaimTypes.Name, "Ronald Tucuman"),
-        new Claim(ClaimTypes.Email, "ronald.tucuman@outlook.com"),
-        new Claim(ClaimTypes.Role, "Administrator")
+        new Claim(ClaimTypes.Name, security.UserName),
+        new Claim("User", security.User),
+        new Claim(ClaimTypes.Role, security.Role.ToString())
       };
 
       // Payload
-      JwtPayload payload = new JwtPayload(_authenticationOptions.Issuer, _authenticationOptions.Audience, claims, DateTime.Now,
-        DateTime.Now.AddMinutes(1));
+      JwtPayload payload = new JwtPayload(_authenticationOptions.Issuer, _authenticationOptions.Audience, claims,
+        DateTime.Now,
+        DateTime.Now.AddMinutes(10));
 
       JwtSecurityToken token = new JwtSecurityToken(header, payload);
 
       return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private bool IsValidUser(UserLoginDto userLogin)
+    private async Task<(bool, Security)> IsValidUser(UserLoginDto userLogin)
     {
-      return true;
+      Security user = await _securityService.GetLoginByCredentials(userLogin);
+      return (user != null, user);
     }
   }
 }
