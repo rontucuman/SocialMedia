@@ -18,14 +18,12 @@ namespace SocialMedia.Infrastructure.Services
 
     public string Hash(string password)
     {
-      using (Rfc2898DeriveBytes algorithm = new Rfc2898DeriveBytes(password, _passwordOptions.SaltSize,
-        _passwordOptions.Iterations, HashAlgorithmName.SHA512))
-      {
-        string key = Convert.ToBase64String(algorithm.GetBytes(_passwordOptions.KeySize));
-        string salt = Convert.ToBase64String(algorithm.Salt);
+      using Rfc2898DeriveBytes algorithm = new Rfc2898DeriveBytes(password, _passwordOptions.SaltSize,
+        _passwordOptions.Iterations, HashAlgorithmName.SHA512);
+      string key = Convert.ToBase64String(algorithm.GetBytes(_passwordOptions.KeySize));
+      string salt = Convert.ToBase64String(algorithm.Salt);
 
-        return $"{_passwordOptions.Iterations}.{salt}.{key}";
-      }
+      return $"{_passwordOptions.Iterations}.{salt}.{key}";
     }
 
     public bool Check(string hash, string password)
@@ -41,7 +39,7 @@ namespace SocialMedia.Infrastructure.Services
       byte[] salt = Convert.FromBase64String(parts[1]);
       byte[] key = Convert.FromBase64String(parts[2]);
 
-      using var algorithm = new Rfc2898DeriveBytes(password, salt, iterations);
+      using var algorithm = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA512);
       byte[] keyToCheck = algorithm.GetBytes(_passwordOptions.KeySize);
       return keyToCheck.SequenceEqual(key);
     }

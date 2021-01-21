@@ -9,8 +9,8 @@ namespace SocialMedia.Infrastructure.Validators
     public PostValidator()
     {
       RuleFor(post => post.Description)
-        .NotEmpty()
-        .Length(5, 10);
+        .NotEmpty().WithMessage("Descripcion no puede ser vacia.")
+        .Length(10, 1000);
 
       RuleFor(post => post.Date)
         .NotEmpty()
